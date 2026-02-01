@@ -1,26 +1,18 @@
 //
-//  Untitled.swift
+//  CharactersDetailView.swift
 //  rickandmorty-ios
 //
 //  Created by Chang Chen, Ya-We on 16/1/26.
 //
 
 
-
 import SwiftUI
-
-
 
 struct CharactersDetailView: View {
     @StateObject private var vm: CharactersDetailViewModel
     
     init(id: Int) {
         _vm = StateObject(wrappedValue: CharactersDetailViewModel(id: id))
-    }
-    
-    // Preview initializer
-    init(previewVM: CharactersDetailViewModel) {
-        _vm = StateObject(wrappedValue: previewVM)
     }
     
     var body: some View {
@@ -31,21 +23,23 @@ struct CharactersDetailView: View {
                 if let character = vm.character {
                     ComponentDetailView(character: character)
                 } else {
-                    MessageView(message: "No data found", color: .gray)
+                    MessageView(model: .init(message: L10nCatalog.dataNoFound.string, fgColor: .gray))
                 }
             case .loading:
-                ProgressView("Loading…")
+                ProgressView(L10nCatalog.loading.string)
             case .error(let error):
-                MessageView(message: "Error: \(error.localizedDescription)", color: .gray)
+                MessageView(model: .init(message: "Error: \(error.localizedDescription)", fgColor: .gray))
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle(.details)
         .task {
             await vm.load()
         }
+       
     }
 }
 
-#Preview {
-    CharactersDetailView(previewVM: .previewMock())
+#Preview("Success") {
+    CharactersDetailView(id: 1)
 }

@@ -5,9 +5,8 @@
 //  Created by Chang Chen, Ya-We on 16/1/26.
 //
 
-
-import Foundation
 import Combine
+import Foundation
 
 class CharactersListViewModel: ObservableObject {
     @Published var characters: [Character] = []
@@ -15,32 +14,28 @@ class CharactersListViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var reachedEnd = false
     @Published var searchText: String = "" {
-          didSet { debounceSearch() }
-      }
-    
-    @Published var statusScope: StatusScope = .all {
-            didSet { Task { await refresh() } }
+        didSet { debounceSearch() }
     }
-    
+
+    @Published var statusScope: StatusScope = .all {
+        didSet { Task { await refresh() } }
+    }
+
     @Published var speciesScope: SpeciesScope = .all {
-         didSet { Task { await refresh() } }
-     }
-
-
+        didSet { Task { await refresh() } }
+    }
 
     private var currentPage = 1
     private var totalPages = Int.max
     private var searchTask: Task<Void, Never>?
-    private let slepNanoSeconds: UInt64 = 300_000_000 // 0.3s debounce
-    
+    private let slepNanoSeconds: UInt64 = 300_000_000  // 0.3s debounce
+
     let characterService: CharactersDataService
 
-    init(apiClient: APIClient =  SessionAPIClient()) {
+    init(apiClient: APIClient = SessionAPIClient()) {
         characterService = CharactersDataService(apiClient)
     }
-    
-    
-    // MARK: - Debounce para evitar llamadas por cada tecla
+
     private func debounceSearch() {
         searchTask?.cancel()
         searchTask = Task {
@@ -49,6 +44,22 @@ class CharactersListViewModel: ObservableObject {
         }
     }
 
+    private func manageError(error: Error) {
+
+        if let apiError = error as? APIError, searchText.isEmpty == false {
+            switch apiError {
+            case .notfound404:
+                errorMessage = L10nCatalog.dataNoFound.string
+            default:
+                Log.log(.error, .viewModel, "Error loading page: \(error)")
+                errorMessage =
+                    "Error loading page: \(error.localizedDescription)"
+                break
+            }
+        } else {
+            errorMessage = "Error loading page: \(error.localizedDescription)"
+        }
+    }
 
     func loadNextPage() async {
         guard !isLoading, currentPage <= totalPages else { return }
@@ -58,8 +69,13 @@ class CharactersListViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            
-            let response = try await characterService.fetchCharacters(page: currentPage, name: searchText, status: statusScope.apiValue, species: speciesScope.apiValue)
+
+            let response = try await characterService.fetchCharacters(
+                page: currentPage,
+                name: searchText,
+                status: statusScope.apiValue,
+                species: speciesScope.apiValue
+            )
             characters.append(contentsOf: response.results)
 
             totalPages = response.info.pages
@@ -69,8 +85,7 @@ class CharactersListViewModel: ObservableObject {
                 reachedEnd = true
             }
         } catch {
-            print("Error loading page:", error)
-            errorMessage = "Error loading page: \(error.localizedDescription)"
+            manageError(error: error)
         }
     }
 
@@ -81,7 +96,7 @@ class CharactersListViewModel: ObservableObject {
         reachedEnd = false
         await loadNextPage()
     }
-    
+
     func isFirstPage() -> Bool {
         return currentPage == 1
     }

@@ -1,5 +1,5 @@
 //
-//  CharacterResponse.swift
+//  Character.swift
 //  rickandmorty-ios
 //
 //  Created by Chang Chen, Ya-We on 16/1/26.
@@ -7,22 +7,12 @@
 
 import Foundation
 
-
 enum StatusScope: String, CaseIterable, Hashable {
-    case all = ""        // sin filtro
-    case alive = "alive"
-    case dead = "dead"
-    case unknown = "unknown"
-
-    var title: String {
-        switch self {
-        case .all: return "Todos"
-        case .alive: return "Alive"
-        case .dead: return "Dead"
-        case .unknown: return "Unknown"
-        }
-    }
-
+    case all = "" 
+    case alive = "Alive"
+    case dead = "Dead"
+    case unknown
+    
     var apiValue: String? {
         self == .all ? nil : self.rawValue
     }
@@ -31,7 +21,7 @@ enum StatusScope: String, CaseIterable, Hashable {
 
 
 enum SpeciesScope: String, CaseIterable, Hashable {
-    case all = ""                 // sin filtro
+    case all = ""    
     case human = "human"
     case alien = "alien"
     case humanoid = "humanoid"
@@ -60,12 +50,10 @@ enum SpeciesScope: String, CaseIterable, Hashable {
     var apiValue: String? { self == .all ? nil : self.rawValue }
 }
 
-struct CharactersPage: Decodable {
-    struct Info: Decodable {
+struct CharactersPage {
+    struct Info {
         let count: Int
         let pages: Int
-        let next: String?
-        let prev: String?
     }
 
     let info: Info
@@ -73,21 +61,57 @@ struct CharactersPage: Decodable {
 }
 
 
-struct Character: Identifiable, Decodable {
+struct Character: Identifiable {
+
+    enum Status: String, CaseIterable {
+        case alive = "Alive"
+        case dead  = "Dead"
+        case unknown = "unknown"
+
+        
+        init(from rawValue: String) {
+            switch rawValue.lowercased() {
+            case "alive":
+                self = .alive
+            case "dead":
+                self = .dead
+            default:
+                self = .unknown
+            }
+        }
+    }
+    
+    enum Gender: String, CaseIterable {
+        case male = "Male"
+        case female = "Female"
+        case genderless = "Genderless"
+        case unknown = "unknown"
+        
+        init(from rawValue: String) {
+            switch rawValue.lowercased() {
+            case "female":
+                self = .female
+            case "fale":
+                self = .male
+            case "genderless":
+                self = .genderless
+            default:
+                self = .unknown
+            }
+        }
+    }
     
     let id: Int
     let name: String
-    let status: String
+    let status: Status
     let species: String
     let image: String
-    let gender: String
+    let gender: Gender
     let origin: CharacterLocationRef
     let location: CharacterLocationRef
 }
 
-
-
-struct CharacterLocationRef: Codable, Equatable {
+struct CharacterLocationRef {
     let name: String
     let url: String
 }

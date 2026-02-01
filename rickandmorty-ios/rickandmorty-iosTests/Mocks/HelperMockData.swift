@@ -21,22 +21,23 @@ class HelperMockData {
         let bundle = Bundle(for: HelperMockData.self)
         
         guard let filePath = bundle.url(forResource: resourceName, withExtension: "json") else {
-            print("Error: File '\(resourceName).json' not found in bundle \(bundle.bundlePath)")
+            Log.log(.error, .test, "Error: File '\(resourceName).json' not found in bundle \(bundle.bundlePath)")
             throw MockError.jsonNoFound
         }
         
         do {
             let contents = try String(contentsOf: filePath, encoding: .utf8)
-            print(contents)
+            Log.log(.info, .test, "Load JSON: \(contents)")
+            
             
             if let data = contents.data(using: .utf8) {
                 return data
             } else {
-                print("Error Mapping")
+                Log.log(.error, .test, "Error Mapping")
                 throw MockError.errorMapping
             }
         } catch {
-            print("Error: \(error)")
+            Log.log(.error, .test, "Error: \(error)")
             throw error
         }
     }

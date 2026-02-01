@@ -28,7 +28,7 @@ final class CharactersDetailViewModelTests: XCTestCase {
         let mockClient = APIClientMock(mockData: [APIResource.character(id: "1").getResourcePath() : mockData])
         let vm = CharactersDetailViewModel(apiClient: mockClient, id: 1)
         
-        let expectedCharacters =  try? JSONDecoder().decode(Character.self, from: mockData.data)
+        let expectedCharacters =  try? JSONDecoder().decode(CharacterDTO.self, from: mockData.data)
 
         // Estado inicial
         XCTAssertEqual(vm.viewState, ViewStateModel.loading)

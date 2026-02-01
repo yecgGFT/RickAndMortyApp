@@ -1,5 +1,5 @@
 //
-//  ComponentDetailRow.swift
+//  ComponentDetailRowView.swift
 //  rickandmorty-ios
 //
 //  Created by Chang Chen, Ya-We on 29/1/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ComponentDetailRow: View {
+struct ComponentDetailRowView: View {
     let title: String
     let value: String
     

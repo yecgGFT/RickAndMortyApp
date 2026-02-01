@@ -45,6 +45,7 @@ protocol APIRequest {
     var body: Data? { get }
     
     func generateQueryItems() -> [URLQueryItem]
+    func accept(_ response: HTTPURLResponse) -> Bool
 }
 
 extension APIRequest {
@@ -53,6 +54,10 @@ extension APIRequest {
     var headers: [String: String] { [:] }
     var queryItems: [URLQueryItem] { [] }
     var body: Data? { nil }
+    
+    func accept(_ response: HTTPURLResponse) -> Bool {
+        return 200..<300 ~= response.statusCode
+    }
 }
 
 

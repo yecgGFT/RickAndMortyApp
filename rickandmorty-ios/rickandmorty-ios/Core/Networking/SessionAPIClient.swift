@@ -6,6 +6,7 @@
 //
 import Foundation
 import Combine
+import os
 
 
 final class SessionAPIClient: APIClient {
@@ -40,28 +41,54 @@ final class SessionAPIClient: APIClient {
         return URLRequest(url: finalURL)
     }
     
+    private func showLog(_ urlRequest: URLRequest, response: URLResponse?, data: Data? ) {
+        Log.log(.info, .network, "👉 Request: \(urlRequest.httpMethod ?? "") \(urlRequest.url?.absoluteString ?? "")")
+        if let headers = urlRequest.allHTTPHeaderFields {
+            Log.log(.info, .network, "Headers: \(headers)")
+        }
+        if let body = urlRequest.httpBody, let bodyString = String(data: body, encoding: .utf8) {
+            Log.log(.info, .network, "Body: \(bodyString)")
+        }
+
+        if let httpResponse = response as? HTTPURLResponse {
+            Log.log(.info, .network, "👈 Response: \(httpResponse.statusCode) \(httpResponse.url?.absoluteString ?? "")")
+            Log.log(.info, .network, "Headers: \(httpResponse.allHeaderFields)")
+        }
+        
+        if let data = data, let prettyJSON = data.prettyPrintedJSONString {
+            Log.log(.info, .network, "Body: \(prettyJSON)")
+        }
+    }
     
     func send<T: APIRequest>(_ request: T) async throws -> T.Response {
         
         let urlRequest = try await buildRequest(for: request)
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
-
-        guard let http = response as? HTTPURLResponse,
-            200..<300 ~= http.statusCode else {
+        
+        showLog(urlRequest, response: response, data: data)
+    
+        guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.badStatus((response as? HTTPURLResponse)?.statusCode ?? -1)
         }
         
-        do {
-            return try JSONDecoder().decode(T.Response.self, from: data)
-        } catch {
-            throw APIError.decoding(error)
+        if request.accept(httpResponse) {
+            do {
+                return try JSONDecoder().decode(T.Response.self, from: data)
+            } catch {
+                throw APIError.decoding(error)
+            }
+        } else {
+            if httpResponse.statusCode == 404 {
+                throw APIError.notfound404
+            } else {
+                throw APIError.badStatus((response as? HTTPURLResponse)?.statusCode ?? -1)
+            }
         }
     }
 
     
     // MARK: - COMBINE
     func sendPublisher<T: APIRequest>(_ request: T) -> AnyPublisher<T.Response, Error> {
-        
         
         let requestPublisher = Future<URLRequest, Error> { promise in
                 Task {
@@ -86,6 +113,5 @@ final class SessionAPIClient: APIClient {
             .eraseToAnyPublisher()
 
     }
-       
 
 }

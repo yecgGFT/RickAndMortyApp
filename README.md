@@ -24,18 +24,19 @@ The codebase follows a clean, layered, domain‑centric architecture guided by s
 - Xcode 26+
 
 ## Project Structure
-Project/
-├─ Core/
-│  ├─ Data/           # Data sources, repositories, DTOs, mappers 
-│  ├─ Domain/         # Use cases, entities, repository interfaces 
-│  ├─ Extensions/     # Small, focused extensions (String+, Date+, View+, etc.)
-│  ├─ Networking/     # API client(s), endpoints, request/response building
-│  └─ Router/         # Route enums + Router protocols (feature-agnostic)
-├─ Design/            # Design system: tokens, colors, typography, reusable components
-├─ L10n/              # Localization: strings catalog, helpers, formatters
-├─ Presentation/
-│  ├─ Characters/     # Feature-specific views + view models + subroutes (example)
-│  └─ Coordinators/   # Coordinators per feature/root; navigation state & flows
+Project
+- Core
+  - Data: Data sources, repositories, DTOs, mappers
+  - Domain: Use cases, entities, repository interfaces
+  - Extensions: Small, focused extensions (String+, Date+, View+, etc.)
+  - Networking: API clients, endpoints, request/response building
+  - Router: Route enums + Router protocols (feature-agnostic)
+- Design: Design system (tokens, colors, typography, reusable components)
+- L10n: Localization (strings catalog, helpers, formatters)
+- Presentation
+  - Characters: Feature-specific views + view models + subroutes
+  - Coordinators: Coordinators per feature/root; navigation state and flows
+
 ## Features
 #### Characters List
    - Displays a scrollable list of characters.
